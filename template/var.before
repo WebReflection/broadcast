@@ -1,1 +1,1 @@
-var notify = (function () {
+var broadcast = (function () {

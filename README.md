@@ -163,7 +163,7 @@ There are basically two ways to have a private notification channel:
 
 
 ## Which file ?
-Browsers could use [the minified version](https://github.com/WebReflection/broadcast/blob/master/build/broadcast.js), otherwise there is a [node module](https://github.com/WebReflection/broadcast/blob/master/build/broadcast.node.js)
+Browsers could use [the minified version](https://github.com/WebReflection/broadcast/blob/master/build/min.js), otherwise there is a [node module](https://github.com/WebReflection/broadcast/blob/master/build/broadcast.node.js)
 which is also available via npm as `npm install broadcast`.
 
 

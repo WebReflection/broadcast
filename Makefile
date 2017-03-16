@@ -28,12 +28,12 @@ build:
 # build generic version
 var:
 	mkdir -p build
-	cat template/var.before $(VAR) template/var.after >build/no-copy.$(REPO).max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO).max.js >build/no-copy.$(REPO).js
-	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO).max.js >build/$(REPO).max.js
-	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
-	rm build/no-copy.$(REPO).max.js
+	cat template/var.before $(VAR) template/var.after >build/no-copy.$(REPO).js
+	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO).js >build/no-copy.min.js
+	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO).js >build/$(REPO).js
+	cat template/copyright build/no-copy.min.js >build/min.js
 	rm build/no-copy.$(REPO).js
+	rm build/no-copy.min.js
 
 # build node.js version
 node:
@@ -64,12 +64,12 @@ duk:
 
 
 size:
-	wc -c build/$(REPO).max.js
-	gzip -c build/$(REPO).js | wc -c
+	wc -c build/$(REPO).js
+	gzip -c build/min.js | wc -c
 
 # hint built file
 hint:
-	node node_modules/jshint/bin/jshint build/$(REPO).max.js
+	node node_modules/jshint/bin/jshint build/$(REPO).js
 
 # clean/remove build folder
 clean:
