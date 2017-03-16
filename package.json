@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "license": "MIT",
+  "name": "broadcast",
+  "description": "",
+  "homepage": "https://github.com/WebReflection/broadcast",
+  "keywords": [
+    "broadcast",
+    "notification",
+    "private",
+    "global",
+    "channel"
+  ],
+  "author": {
+    "name": "Andrea Giammarchi",
+    "web": "http://webreflection.blogspot.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/WebReflection/broadcast.git"
+  },
+  "main": "./build/broadcast.node.js",
+  "scripts": {
+    "test": "NATIVE=1 node test/test.js && sleep 2 && istanbul cover test/test.js",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "web": "tiny-cdn run"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.15",
+    "istanbul": "^0.4.5",
+    "jshint": "~2.x",
+    "tiny-cdn": "^0.7.0",
+    "tressa": "^0.2.0",
+    "uglify-js": "1.x"
+  }
+}
