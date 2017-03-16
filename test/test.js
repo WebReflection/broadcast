@@ -20,7 +20,7 @@ if (!process.env.NATIVE) {
   global.Object.freeze = undefined;
 }
 // grab the module
-var notify = require('../build/broadcast.node.js');
+var broadcast = require('../build/broadcast.node.js');
 
 if (!process.env.NATIVE) {
   // put everything back where it was
@@ -33,23 +33,23 @@ if (!process.env.NATIVE) {
 }
 
 test.title('broadcast');
-test(typeof notify === 'object', 'module');
+test(typeof broadcast === 'object', 'module');
 
 test.async(function (done) {
   var i = 0, r = Math.random();
   function increase() { i++; }
-  notify.when('test-when', increase);
+  broadcast.when('test-when', increase);
   setTimeout(function () {
     test.log('## when');
     test(i === 0, 'did not happen');
-    notify.that('test-when', r);
+    broadcast.that('test-when', r);
     test(i === 0, 'happens asynchronously');
     setTimeout(function () {
       test(i === 1, 'it was invoked');
-      notify.that('test-when', r);
+      broadcast.that('test-when', r);
       setTimeout(function () {
         test(i === 1, 'it was NOT invoked');
-        notify.when('test-when', increase);
+        broadcast.when('test-when', increase);
         setTimeout(function () {
           test(i === 2, 'it was invoked again');
           done();
@@ -68,17 +68,17 @@ test.async(function (done) {
     v
   ;
   function about(value) { v = value; }
-  notify.when('test-about', about);
+  broadcast.when('test-about', about);
   setTimeout(function () {
     test.log('## that');
     test(v === undefined, 'never invoked');
-    notify.that('test-about', r1);
+    broadcast.that('test-about', r1);
     setTimeout(function () {
       test(v === r1, 'value assigned');
       v = null;
-      notify.when('test-about', about);
-      notify.that('test-about', r2);
-      notify.when('test-about', about);
+      broadcast.when('test-about', about);
+      broadcast.that('test-about', r2);
+      broadcast.when('test-about', about);
       setTimeout(function () {
         test(v === r2, 'new value');
         done();
@@ -92,9 +92,9 @@ later += 5;
 test.async(function (done) {
   var i = 0, r = Math.random();
   function increase() { i++; }
-  notify.when('test-drop', increase);
-  notify.drop('test-drop', increase);
-  notify.that('test-drop', r);
+  broadcast.when('test-drop', increase);
+  broadcast.drop('test-drop', increase);
+  broadcast.that('test-drop', r);
   setTimeout(function () {
     test.log('## drop');
     test(i === 0, 'it was NOT invoked');
@@ -106,21 +106,21 @@ test.async(function (done) {
 later += 5;
 
 test.async(function (done) {
-  var other = notify['new']();
+  var other = broadcast['new']();
   var which = '', r = Math.random();
   other.when('test-new', function () {
     which += 'other';
   });
-  notify.when('test-new', function () {
-    which += 'notify';
+  broadcast.when('test-new', function () {
+    which += 'broadcast';
   });
   other.that('test-new', r);
   setTimeout(function () {
     test.log('## new');
     test(which === 'other', 'invoked as other');
-    notify.that('test-new', r);
+    broadcast.that('test-new', r);
     setTimeout(function () {
-      test(which === 'othernotify', 'invoked as notify');
+      test(which === 'otherbroadcast', 'invoked as broadcast');
       done();
     }, delay);
   }, delay * later);
@@ -131,8 +131,8 @@ later += 5;
 test.async(function (done) {
   var args;
   function increase() { args = arguments; }
-  notify.when('test-multiple-arguments', increase);
-  notify.that('test-multiple-arguments', 1, 2);
+  broadcast.when('test-multiple-arguments', increase);
+  broadcast.that('test-multiple-arguments', 1, 2);
   setTimeout(function () {
     test.log('## multiple arguments');
     test(args[0] === 1 && args[1] === 2 && args.length === 2, 'expected arguments');
@@ -145,10 +145,10 @@ later += 5;
 test.async(function (done) {
   var args;
   function increase() { args = arguments; }
-  notify.when('test-create-callback', increase);
+  broadcast.when('test-create-callback', increase);
   setTimeout(function () {
     test.log('## create callback');
-    var fn = notify.that('test-create-callback');
+    var fn = broadcast.that('test-create-callback');
     test(typeof fn === 'function', 'a function is returned');
     setTimeout(function () {
       test(!args, 'nothing was resolved');
@@ -171,20 +171,20 @@ later += 5;
 test.async(function (done) {
   var i = 0, r = Math.random();
   function increase() { i++; }
-  notify.all('test-all', increase);
+  broadcast.all('test-all', increase);
   setTimeout(function () {
     test.log('## all');
     test(i === 0, 'did not happen');
-    notify.that('test-all', r);
+    broadcast.that('test-all', r);
     test(i === 0, 'happens asynchronously');
     setTimeout(function () {
       test(i === 1, 'it was invoked');
-      notify.that('test-all', r);
+      broadcast.that('test-all', r);
       test(i === 1, 're-happens asynchronously');
       setTimeout(function () {
         test(i === 2, 'it was invoked');
-        notify.drop('test-all', increase);
-        notify.that('test-all', r);
+        broadcast.drop('test-all', increase);
+        broadcast.that('test-all', r);
         setTimeout(function () {
           test(i === 2, 'it was NOT invoked again');
           done();
@@ -200,8 +200,8 @@ test.async(function (done) {
   setTimeout(function () {
     test.log('## .that(type, value):value');
     var rand = Math.random();
-    var through = notify.that('test-through', rand);
-    notify.when('test-through', function (value) {
+    var through = broadcast.that('test-through', rand);
+    broadcast.when('test-through', function (value) {
       test(value === rand, 'same value resolved');
       done();
     });
@@ -215,9 +215,9 @@ if (typeof Promise !== 'undefined') {
     setTimeout(function () {
         test.log('## .when(type):Promise');
         var v = Math.random(), args;
-        var p = notify.when('test-promise');
+        var p = broadcast.when('test-promise');
         test(typeof p === 'object', 'object returned');
-        notify.that('test-promise', v);
+        broadcast.that('test-promise', v);
         p.then(function (value) {
         test(value === v, 'the value is the right one');
         done();
@@ -232,9 +232,9 @@ if (typeof Promise !== 'undefined') {
       var rand = Math.random();
       test.log('## .when(type):futureValue');
       Promise.resolve(rand)
-        .then(notify.that('test-future-value'))
+        .then(broadcast.that('test-future-value'))
         .then(function (value) {
-          notify.when('test-future-value').then(function (later) {
+          broadcast.when('test-future-value').then(function (later) {
             test(value === later, 'later value is the same');
             test(value === rand, 'later value is correct');
             done();
