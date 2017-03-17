@@ -22,6 +22,7 @@ if (!process.env.NATIVE) {
 // grab the module
 var broadcast = require('../build/broadcast.node.js');
 
+
 if (!process.env.NATIVE) {
   // put everything back where it was
   global.WeakMap = WeakMap;
@@ -32,12 +33,16 @@ if (!process.env.NATIVE) {
   global.Object.freeze = freeze;
 }
 
+
 test.title('broadcast');
 test(typeof broadcast === 'object', 'module');
 
 test.async(function (done) {
   var i = 0, r = Math.random();
   function increase() { i++; }
+  broadcast.when('test-when', increase);
+  // if set twice but same callback
+  // don't add it twice
   broadcast.when('test-when', increase);
   setTimeout(function () {
     test.log('## when');
@@ -183,10 +188,15 @@ test.async(function (done) {
       test(i === 1, 're-happens asynchronously');
       setTimeout(function () {
         test(i === 2, 'it was invoked');
+        // if already set don't set it again
+        broadcast.all('test-all', increase);
+        // drop it anyway
         broadcast.drop('test-all', increase);
         broadcast.that('test-all', r);
         setTimeout(function () {
           test(i === 2, 'it was NOT invoked again');
+          // if already dropped don't fail or throw
+          broadcast.drop('test-all', increase);
           done();
         }, delay);
       }, delay);
@@ -208,6 +218,8 @@ test.async(function (done) {
   }, delay * later);
 });
 
+later += 5;
+
 if (typeof Promise !== 'undefined') {
     later += 5;
 
@@ -219,8 +231,8 @@ if (typeof Promise !== 'undefined') {
         test(typeof p === 'object', 'object returned');
         broadcast.that('test-promise', v);
         p.then(function (value) {
-        test(value === v, 'the value is the right one');
-        done();
+          test(value === v, 'the value is the right one');
+          done();
         });
     }, delay * later);
   });

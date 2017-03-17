@@ -31,14 +31,14 @@ THE SOFTWARE.
  * // all listeners waiting for it, will be triggered
  *
  *
- * // what if you add a listener after the `.about` call?
+ * // what if you add a listener after the `.that` call?
  * broadcast.when("data", function (data) {
  *   console.log('yep, instantly called!', data);
  * });
  *
  *
  * // what if we redefine data ?
- * broadcast.about("data", {another:'value'});
+ * broadcast.that("data", {another:'value'});
  * // from now on, whoever will ask `.when` data
  * // the value will be the updated one
  * // but every listener already fired and satisfied
@@ -88,27 +88,24 @@ function create(O) {'use strict';
       function (value) {
         return Promise.resolve(value);
       },
-    // little WeakMap poly
+    // little partial WeakMap poly
     wm = typeof WeakMap == 'undefined' ?
-      (function (k, v, i) {
+      (function (k, v) {
         return {
           // delete used to be a reserved property name
           'delete': function (x) {
-            i = indexOf.call(k, x);
-            if (~i) {
-              k.splice(i, 1);
-              v.splice(i, 1);
-            }
+            var i = indexOf.call(k, x);
+            k.splice(i, 1);
+            v.splice(i, 1);
           },
           get: function (x) {
             return v[indexOf.call(k, x)];
           },
           set: function (x, y) {
-            i = indexOf.call(k, x);
-            v[i < 0 ? (k.push(x) - 1) : i] = y;
+            v[k.push(x) - 1] = y;
           }
         };
-      }([], [], 0)) :
+      }([], [])) :
       new WeakMap()
   ;
 
@@ -198,12 +195,14 @@ function create(O) {'use strict';
     when: when,
 
     // .about is an alias for .that
+    about: that,
+
     // There are two ways to use this method
     //
-    // .about(type)
+    // .that(type)
     //    will return a callback
     //    that will try to resolve once executed
-    //    fs.readFile('setup.json', broadcast.about('setup.json'))
+    //    fs.readFile('setup.json', broadcast.that('setup.json'))
     //
     // overload
     // .that(type, any1[, any2[, ...]])
@@ -214,7 +213,6 @@ function create(O) {'use strict';
     //    // through more arguments
     //    broadcast.that('some-event', null, 'OK');
     //
-    about: that,
     that: that,
 
     // if we set a listener through `.when`
