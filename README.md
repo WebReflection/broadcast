@@ -1,170 +1,109 @@
-broadcast [![build status](https://secure.travis-ci.org/WebReflection/broadcast.svg)](http://travis-ci.org/WebReflection/broadcast) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/broadcast/badge.svg?branch=master)](https://coveralls.io/github/WebReflection/broadcast?branch=master)
+broadcast [![build status](https://secure.travis-ci.org/WebReflection/broadcast.svg)](http://travis-ci.org/WebReflection/broadcast) [![Coverage Status](https://s3.amazonaws.com/assets.coveralls.io/badges/coveralls_100.svg)](https://coveralls.io/github/WebReflection/broadcast?branch=master)
 =========
 
-A simplified global or private notification channel for values that happened in the past,
-and those that will happen in the future.
-[Related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
+Previously known as [notify-js](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises),
+`broadcast` is a private or public notification chanel inspired by standards.
 
-
-## API
-There are 2 main methods such `.that(type[, any1[, any2[, ...]]])` and `.when(type[, callback])`,
-plus 3 extra helpers such `.drop(type, callback)`, `.all(type, callback)`, and `.new()`.
-
-
-### broadcast.that(type[, ...])
-This method is useful to broadcast about a generic channel.
+Useful for loaders, components bootstrap, geo position updates, and all other asynchronous or on demand user granted privileges operations, `broadcast` works on every browser and every platform, it's 100% tests covered, and it weights less than 1Kb.
 
 ```js
-// whenever it happens ...
+// as Promise,
+//  inspired by customRegistry.whenDefined(...).then(...)
+// will you ever ask for a geo position or
+// have you asked for it already ?
+broadcast.when('geo:position').then(info => {
+  showOnMap(info.coords);
+});
+
+// as Callback,
+//  receiving one or more arguments
+// have you read that file before or
+// will you read it at some point ?
+broadcast.when('fs:README.md', (err, result) => {
+  if (!err) echomd(result.toString());
+});
+
+// as one-off Event (Promise or Callback)
+broadcast.when(
+  'dom:DOMContentLoaded',
+  boostrapMyApp
+);
+```
+
+It doesn't matter if a channel was resolved, updated, or never asked for,
+whenever that happens, broadcasts will follow.
+
+```js
+// that position? only once asked for it
 navigator.geolocation.getCurrentPosition(info => {
-  // ... broadcast anyone asking for 'geo:position'
+  // manual broadcast
   broadcast.that('geo:position', info);
 });
 
-// equivalent shortcut, will resolve
-// with the first argument
-navigator.geolocation.getCurrentPosition(
+// update the position each change? same
+navigator.geolocation.watchPosition(
+  // implicit broadcast once executed
   broadcast.that('geo:position')
 );
 
-// NodeJS API compatible
+// the file? You got it.
 fs.readFile(
-  'package.json',
-  broadcast.that('fs:package.json')
+  'README.md',
+  // will broadcast once executed
+  broadcast.that('fs:README.md')
+);
+
+// top of the page
+document.addEventListener(
+  'DOMContentLoaded',
+  broadcast.that('dom:DOMContentLoaded')
 );
 ```
 
+#### one broadcast VS all broadcasts
 
-#### broadcast.that(type) and Promises
-This method can also be used as middleware, passing along whatever first argument it receives.
-
-```js
-// middleware
-connectToDb
-  // resolves and returns the value
-  .then(broadcast.that('db:connected'))
-  .then(readDatabaseInfo);
-```
-
-
-### broadcast.when(type[, callback])
-Usable both through callbacks or as `Promise`, the `.when` method asks for a channel and resolves it once available.
+A `broadcast` happens only once asked for it, and it will receive the latest resolution.
+If you'd like to listen to all broadcasted changes, you can use `broadcast.all(type, callback)`,
+and eventually stop listening to it via `broadcast.drop(type, callback)`.
 
 ```js
-// using a callback
-broadcast.when('geo:position', info => {
-  console.log(info.coords);
-});
 
-// Promise based
-broadcast.when('geo:position').then(info => {
-  console.log(info.coords);
-})
-```
+let watchId;
 
-It doesn't matter if `.when` is used before or after a channel has been resolved, it will always pass along the last known resolved value.
-
-```js
-// log on 'timer' channel (will log 123)
-broadcast.when('timer', console.log);
-
-// resolves the channel with value 1
-broadcast.that('timer', 123);
-
-setTimeout(() => {
-  // log resolved 'timer' channel value
-  // (will log 123)
-  broadcast.when('timer', console.log);
-}, 200);
-```
-
-
-#### Callback or Promise ?
-If you are resolving older APIs like NodeJS `require('fs').readFile`,
-you probably want to use a callback because the resolution will pass along two arguments instead of one.
-
-```js
-fs.readFile(
-  'package.json',
-  (err, blob) => {
-    broadcast.that('fs:package.json', err, blob);
-  }
-);
-
-broadcast.when('fs:package.json', (err, blob) => {
-  if (err) return console.error(err);
-  console.log(blob.toString());
-});
-```
-
-As previously mentioned, you can still use the shortcut to resolve with all arguments once that happens.
-
-```js
-fs.readFile(
-  'package.json',
-  broadcast.that('fs:package.json')
-);
-```
-
-
-### broadcast.drop(type, callback)
-Usable only for callbacks registered via `broadcast.when(type, callback)`,
-the `.drop` method avoids triggering the channel in the immediate present or future.
-
-```js
-function log(value) {
-  console.log(value);
+function updatePosition(info) {
+  mapTracker.setCoords(info.coords);
 }
 
-// wait for it to happen
-broadcast.when('happened', log);
-
-// change your mind
-broadcast.drop('happened', log);
-
-// whenever it happens
-// nothing will be logged
-broadcast.that('happened', 'nope');
-```
-This method is particularly handy in conjunction of the `broadcast.all(type, callback)` method.
-
-
-### broadcast.all(type, callback)
-In case you'd like to react every time a channel is updated,
-this method will register the `callback` and invoke it with the latest resolution each time.
-
-```js
-// each position change
-navigator.geolocation.watchPosition(
-  // update with latest info
-  broadcast.that('geo:position')
-);
-
-
-// react to all position changes
-broadcast.all(
-  'geo:position',
-
-  // tracker
-  info => {
-    console.log(info.coords);
+button.addEventListener('click', e => {
+  if (watchId) {
+    navigator.geolocation.clearWatch(watcher);
+    watchId = 0;
+    broadcast.drop('geo:position', updatePosition);
+  } else {
+    watchId = navigator.geolocation.watchPosition(
+      // updates the latest position info on each call
+      broadcast.that('geo:position')
+    );
+    broadcast.all('geo:position', updatePosition);
   }
-);
+});
 ```
 
-Registered callbacks can be dropped through the `broadcast.drop(type, callback)` method.
 
-### broadcast.new()
-There are basically two ways to have a private notification channel:
+#### private broadcasts
+There are two different ways to have a private broadcasts:
 
-  * using a private `Symbol` as channel, like in `broadcast.when(privateSymbol).then(log)`
+  * using a secret unique string or a private `Symbol` as channel, like in `broadcast.when(privateSymbol).then(log)`
   * create a local version of the notifier that will share nothing with the main one:
     `const pvt = broadcast.new();`
 
+The first way enables shared, yet private, resolutions while the second one would be unreachable outside its scope.
 
-## Which file ?
-Browsers could use [the minified version](https://github.com/WebReflection/broadcast/blob/master/build/min.js), otherwise there is a [node module](https://github.com/WebReflection/broadcast/blob/master/build/broadcast.node.js)
-which is also available via npm as `npm install broadcast`.
+
+### broadcast files
+The [node module](https://github.com/WebReflection/broadcast/blob/master/build/broadcast.node.js) is available via `npm install broadcast`.
+
+The [minified version](https://github.com/WebReflection/broadcast/blob/master/build/min.js) is available through https://unpkg.com/broadcast@latest/min.js
 
 
 ## Compatibility

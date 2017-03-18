@@ -34,6 +34,7 @@ var:
 	cat template/copyright build/no-copy.min.js >build/min.js
 	rm build/no-copy.$(REPO).js
 	rm build/no-copy.min.js
+	mv build/min.js ./
 
 # build node.js version
 node:
@@ -65,7 +66,7 @@ duk:
 
 size:
 	wc -c build/$(REPO).js
-	gzip -c build/min.js | wc -c
+	gzip -c min.js | wc -c
 
 # hint built file
 hint:
