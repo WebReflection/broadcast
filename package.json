@@ -1,6 +1,6 @@
 {
   "version": "2.0.2",
-  "license": "MIT",
+  "license": "ISC",
   "name": "broadcast",
   "description": "",
   "homepage": "https://github.com/WebReflection/broadcast",
@@ -19,7 +19,8 @@
     "type": "git",
     "url": "git://github.com/WebReflection/broadcast.git"
   },
-  "main": "./build/broadcast.node.js",
+  "main": "build/broadcast.node.js",
+  "browser": "min.js",
   "scripts": {
     "test": "NATIVE=1 node test/test.js && sleep 2 && istanbul cover test/test.js",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
