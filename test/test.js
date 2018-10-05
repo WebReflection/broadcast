@@ -35,7 +35,12 @@ tressa.async(function (done) {
       tressa.assert(thingsCalls.length === 3, 'things was removed from invokes');
       broadcast.drop('things', things);
       broadcast.drop('things');
-      done();
+      broadcast.when('dropped', function (value) {
+        tressa.assert(value === true, 'even dropped right away, .that(...) notifies listeners');
+        done();
+      });
+      broadcast.that('dropped', true);
+      broadcast.drop('dropped');
     }, 100);
   }, 100);
   function things(value) {
