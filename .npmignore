@@ -9,3 +9,4 @@ utils
 node_modules
 Makefile
 API.md
+package-lock.json

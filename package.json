@@ -19,18 +19,21 @@
     "type": "git",
     "url": "git://github.com/WebReflection/broadcast.git"
   },
-  "main": "build/broadcast.node.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "unpkg": "min.js",
   "scripts": {
-    "test": "NATIVE=1 node test/test.js && sleep 2 && istanbul cover test/test.js",
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "web": "tiny-cdn run"
+    "build": "npm run esm && npm run cjs && npm run test && npm run min",
+    "cjs": "cp index.js cjs/index.js && echo 'module.exports = broadcast();' >> cjs/index.js",
+    "esm": "cp index.js esm/index.js && echo 'export default broadcast();' >> esm/index.js",
+    "min": "uglifyjs index.js --support-ie8 --comments=/^!/ -c -m -o min.js",
+    "test": "istanbul cover test/test.js",
+    "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "devDependencies": {
-    "coveralls": "^2.11.15",
+    "coveralls": "^3.0.2",
     "istanbul": "^0.4.5",
-    "jshint": "~2.x",
-    "tiny-cdn": "^0.7.0",
+    "jshint": "^2.9.6",
     "tressa": "^0.3.1",
     "uglify-js": "^2.8.29"
   }

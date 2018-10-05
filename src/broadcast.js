@@ -197,15 +197,20 @@ function create(O) {'use strict';
     // and this hasn't been notified yet
     // but we changed our mind about such notification
     // we can still remove such listener via `.drop`
+    // otherwise, if we know the key, we can drop it.
     drop: function drop(type, callback) {
-      var fn = wm.get(callback), cb, i;
-      if (fn) {
-        wm['delete'](callback);
-        drop(type, fn);
-      } else {
-        cb = get(type).cb;
-        i = indexOf.call(cb, callback);
-        if (~i) cb.splice(i, 1);
+      if (arguments.length === 1)
+        delete _[type];
+      else {
+        var fn = wm.get(callback), cb, i;
+        if (fn) {
+          wm['delete'](callback);
+          drop(type, fn);
+        } else {
+          cb = get(type).cb;
+          i = indexOf.call(cb, callback);
+          if (~i) cb.splice(i, 1);
+        }
       }
     },
 
