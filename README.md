@@ -11,6 +11,7 @@ Useful for loaders, components bootstrap, geo position updates, and all other as
   * **Breaking**
     * removed `new` method; the export now is `broadcast` and the `Broadcast` class
     * changed `when` signature; it now always returns a *Promise*
+    * no transpilation anymore, usable by ES2015+ compatible engines
   * **New**
     * smaller
     * faster
@@ -27,6 +28,8 @@ Useful for loaders, components bootstrap, geo position updates, and all other as
 ### Examples
 
 ```js
+import {broadcast} from 'broadcast';
+
 // as Promise,
 //  inspired by customRegistry.whenDefined(...).then(...)
 // will you ever ask for a geo position or
@@ -105,13 +108,7 @@ button.addEventListener('click', e => {
 #### private broadcasts
 There are two different ways to have a private broadcasts:
 
-  * using a secret `type` as channel, like in `broadcast.when(privateSymbol).then(log)`
-  * create a local version of the notifier that will share nothing with the main one:
-    `const pvt = broadcast.new();`
+  * using a secret `type` as channel, like in `broadcast.when(privateSymbol)`
+  * create an instance a part via `import {Broadcast} from 'broadcast';` and `const bc = new Broadcast;`
 
 The first way enables shared, yet private, resolutions while the second one would be unreachable outside its scope.
-
-
-## Compatibility
-This library is compatible with every JS engine since ES3, both browser and server,
-but a `Promise` and a `Map` polyfill might be needed in very old engines.
