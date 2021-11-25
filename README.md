@@ -1,5 +1,6 @@
-broadcast [![build status](https://secure.travis-ci.org/WebReflection/broadcast.svg)](http://travis-ci.org/WebReflection/broadcast) [![Coverage Status](https://s3.amazonaws.com/assets.coveralls.io/badges/coveralls_100.svg)](https://coveralls.io/github/WebReflection/broadcast?branch=master)
-=========
+# broadcast
+
+[![build status](https://github.com/WebReflection/broadcast/actions/workflows/node.js.yml/badge.svg)](https://github.com/WebReflection/broadcast/actions) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/broadcast/badge.svg)](https://coveralls.io/github/WebReflection/broadcast)
 
 Previously known as [notify-js](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises),
 `broadcast` is a private or public notification chanel inspired by standards.
