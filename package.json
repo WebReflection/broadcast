@@ -1,6 +1,6 @@
 {
   "name": "broadcast",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A promises based notification channel",
   "main": "./cjs/index.js",
   "scripts": {
