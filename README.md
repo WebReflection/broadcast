@@ -4,7 +4,7 @@ broadcast [![build status](https://secure.travis-ci.org/WebReflection/broadcast.
 Previously known as [notify-js](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises),
 `broadcast` is a private or public notification chanel inspired by standards.
 
-Useful for loaders, components bootstrap, geo position updates, and all other asynchronous or on demand user granted privileges operations, `broadcast` works on every browser and every platform, it's 100% tests covered, and it weights less than 1Kb.
+Useful for loaders, components bootstrap, geo position updates, and all other asynchronous or on demand user granted privileges operations, `broadcast` works on every browser and every platform, it's 100% tests covered, and it weights about 0.3K.
 
 ### V4 Release
 
@@ -17,21 +17,10 @@ Useful for loaders, components bootstrap, geo position updates, and all other as
     * better
     * stronger
 
-### V3 Release
-
-  * **Breaking**
-    * all callbacks now are invoked with a single parameter/argument to normalize Promise vs callback behavior
-    * removed `about` alias for `that` as just redundant / confusing
-  * **New**
-    * Fully Promises micro-tasks based, including callbacks.
-    * `drop(type)` to delete from the internal Map the `type`. Watch out, if the type was unresolved and there were promises related to such type, these promises will be inevitably forever pending. If you drop a type without ever resolving it, please be sure you either never returned promises or resolve it via `that(type, void 0)` then `drop` it.
-    * ESM module as `broadcast/esm/index.js`
-    * CJS module as `broadcast/cjs`
-
 ### API
 
-  * `.all(type:any, callback:Function):void` to be notified every time a specific _type_ changes (i.e. each `.that(type, value)` call in the future)
-  * `.drop(type:any[, callback:Function]):void` remove a specific _callback_ from all future changes. If omitted, it removes _type_ from the internal _Map_
+  * `.all(type:any, callback:Function):void` to be notified every time a specific _type_ changes (i.e. each `.that(type, value)` call in the future).
+  * `.drop(type:any[, callback:Function]):void` remove a specific _callback_ from all future changes. If the callback is omitted, it removes _type_ from the internal _Map_ (drop all callbacks and value).
   * `.that(type:any[, value:any]):Function|void` broadcast to all callbacks and resolves all promises with `value`. If omitted, it returns a callback that will broadcast, once invoked, the received `value` (i.e. `thing.addListener(any, broadcast.that(type))`).
   * `.when(type:any):Promise` returns a _Promise_ that will resolve once _type_ is known.
 
