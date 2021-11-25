@@ -6,6 +6,17 @@ Previously known as [notify-js](https://www.webreflection.co.uk/blog/2015/08/14/
 
 Useful for loaders, components bootstrap, geo position updates, and all other asynchronous or on demand user granted privileges operations, `broadcast` works on every browser and every platform, it's 100% tests covered, and it weights less than 1Kb.
 
+### V4 Release
+
+  * **Breaking**
+    * removed `new` method; the export now is `broadcast` and the `Broadcast` class
+    * changed `when` signature; it now always returns a *Promise*
+  * **New**
+    * smaller
+    * faster
+    * better
+    * stronger
+
 ### V3 Release
 
   * **Breaking**
@@ -21,9 +32,8 @@ Useful for loaders, components bootstrap, geo position updates, and all other as
 
   * `.all(type:any, callback:Function):void` to be notified every time a specific _type_ changes (i.e. each `.that(type, value)` call in the future)
   * `.drop(type:any[, callback:Function]):void` remove a specific _callback_ from all future changes. If omitted, it removes _type_ from the internal _Map_
-  * `.new():broadcast` create a new private broadcaster.
   * `.that(type:any[, value:any]):Function|void` broadcast to all callbacks and resolves all promises with `value`. If omitted, it returns a callback that will broadcast, once invoked, the received `value` (i.e. `thing.addListener(any, broadcast.that(type))`).
-  * `.when(type:any[, callback:Function]):Promise|void` invokes the callback next tick if _type_ is already known, it will invoke it as soon as _type_ is known otherwise. If omitted, it returns a _Promise_ that will resolve once _type_ is known.
+  * `.when(type:any):Promise` returns a _Promise_ that will resolve once _type_ is known.
 
 ### Examples
 
@@ -36,19 +46,10 @@ broadcast.when('geo:position').then(info => {
   showOnMap(info.coords);
 });
 
-// as Callback,
-//  receiving one or more arguments
-// have you read that file before or
-// will you read it at some point ?
-broadcast.when('fs:README.md', data => {
-  echomd(data.toString());
-});
-
 // as one-off Event (Promise or Callback)
-broadcast.when(
-  'dom:DOMContentLoaded',
-  boostrapMyApp
-);
+broadcast
+  .when('dom:DOMContentLoaded')
+  .then(boostrapMyApp);
 ```
 
 It doesn't matter if a channel was resolved, updated, or never asked for,

@@ -1,61 +1,57 @@
 /*! (c) Andrea Giammarchi - ISC */
-function broadcast() {
-  var map = new Map;
-  return {
-    all: all,
-    drop: drop,
-    new: broadcast,
-    that: that,
-    when: when
-  };
-  function all(type, c) {
-    var _ = _get(type);
-    if (_.c.indexOf(c) < 0)
-      _.c.push(c);
-    when(type, c);
+
+const _ = new WeakMap;
+
+class Broadcast {
+  constructor() {
+    _.set(this, {v: new Map, f: new Map});
   }
-  function drop(type, c) {
-    var _ = _get(type);
+  all(type, callback) {
+    const {v, f} = _.get(this);
+    if (!f.has(type))
+      f.set(type, new Set);
+    f.get(type).add(callback);
+    if (v.has(type))
+      Promise.resolve(v.get(type)).then(callback);
+  }
+  drop(type) {
+    const {v, f} = _.get(this);
     if (1 < arguments.length) {
-      _cancel(_.c, c);
-      _cancel(_.f, c);
+      if (f.has(type))
+        f.get(type).delete(arguments[1]);
     }
-    else
-      map.delete(type);
+    else {
+      v.delete(type);
+      f.delete(type);
+    }
   }
-  function that(type, value) {
+  that(type) {
     if (1 < arguments.length) {
-      var _ = _get(type);
-      _.$ = Promise.resolve(value);
-      while (_.f.length) _.$.then(_.f.shift());
-      while (_.r.length) _.$.then(_.r.shift());
-      _.f.push.apply(_.f, _.c);
+      const value = arguments[1];
+      const {v, f} = _.get(this);
+      v.set(type, value);
+      if (f.has(type)) {
+        for (const callback of f.get(type))
+          callback(value);
+      }
+      return;
     }
-    else
-      return that.bind(null, type);
+    return value => this.that(type, value);
   }
-  function when(type, f) {
-    var _ = _get(type);
-    if (_.$ !== null)
-      _.$.then(that.bind(null, type));
-    if (1 < arguments.length) {
-      if (_.f.indexOf(f) < 0)
-        _.f.push(f);
-    }
-    else
-      return new Promise(function (r) { _.r.push(r); });
-  }
-  function _cancel(a, f) {
-    var i = a.indexOf(f);
-    if (-1 < i)
-      a.splice(i, 1);
-  }
-  function _get(type) {
-    return map.get(type) || _set(type);
-  }
-  function _set(type) {
-    var _ = {c: [], f: [], r: [], $: null};
-    map.set(type, _);
-    return _;
+  when(type) {
+    const {v} = _.get(this);
+    return v.has(type) ?
+      Promise.resolve(v.get(type)) :
+      new Promise(resolve => {
+        const resolved = value => {
+          this.drop(type, resolved);
+          resolve(value);
+        };
+        this.all(type, resolved);
+      });
   }
 }
+
+const broadcast = new Broadcast;
+
+export { Broadcast, broadcast };
